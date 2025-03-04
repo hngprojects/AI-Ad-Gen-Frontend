@@ -1,6 +1,6 @@
 import {
   Ai,
-  Arrowdown,
+  Chevrondown,
   Arrowright,
   Arrowsoliddown,
   Document,
@@ -28,6 +28,14 @@ import {
   Toggle,
   Twitter,
   Videoicon,
+  Smartfiinder,
+  Shells,
+  Zoomerr,
+  Waves,
+  Artvenue,
+  Greentick,
+  Chevronright,
+  Chevronup
 } from "@/components/icons/icon";
 
 const page = () => {
@@ -45,7 +53,7 @@ const page = () => {
           alignItems: "center",
           justifyContent: "center",
           border: "1px solid var(--foreground)",
-          width: "100%",
+          width: "90%",
           padding: "16px",
           maxWidth: "1000px",
           margin: "50px auto",
@@ -118,8 +126,28 @@ const page = () => {
             alignItems: "center",
           }}
         >
-          <Arrowdown />
-          <span> Arrowdown</span>
+          <Chevrondown />
+          <span> Chevrondown</span>
+        </div>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
+          <Chevronright />
+          <span> Chevronright</span>
+        </div>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
+          <Chevronup />
+          <span> Chevronup</span>
         </div>
         <div
           style={{
@@ -340,6 +368,66 @@ const page = () => {
         >
           <Lens />
           <span> Lens</span>
+        </div>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
+          <Smartfiinder />
+          <span>Smartfiinder</span>
+        </div>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
+          <Shells />
+          <span>Shells</span>
+        </div>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
+          <Zoomerr />
+          <span>Zoomerr</span>
+        </div>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
+          <Waves />
+          <span>Waves</span>
+        </div>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
+          <Artvenue />
+          <span>Artvenue</span>
+        </div>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
+          <Greentick />
+          <span>Greentick</span>
         </div>
       </div>
     </div>
