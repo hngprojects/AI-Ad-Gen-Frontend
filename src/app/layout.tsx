@@ -40,7 +40,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={clsx(manrope.variable, nunito.variable, adlam_display.variable)}>
-      <body className="dark font-manrope">
+      <body className="font-nunito">
       <SonnerToaster />
       <QueryProvider>
         <TopProgressBarProvider>{children}</TopProgressBarProvider>
