@@ -50,7 +50,7 @@ const Plus = (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
-const StarFall = (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
+const StarFall = () => (
   <svg
     width="24"
     height="24"
