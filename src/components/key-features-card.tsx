@@ -7,11 +7,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
+// Define the structure of a feature item
 interface Feature {
   title: string;
   description: string;
 }
 
+// Data for the feature cards
 const featuresData: Feature[] = [
   {
     title: "AI-powered Visuals",
@@ -28,19 +30,23 @@ const featuresData: Feature[] = [
   },
 ];
 
+// FeatureCard component that renders the feature cards
 const FeatureCard = () => {
   return (
     <div className="grid lg:grid-cols-3 grid-cols-1 gap-4 max-w-7xl bg-white mx-auto px-8">
+      {/* Loop through featuresData to generate cards dynamically */}
       {featuresData.map((feature, index) => (
         <Card
           key={index}
-          className="px-10 py-8 gap-6 items-start rounded-2xl border border-[#FCFCFC]  bg-[#F8E6F8]/50"
+          className="px-10 py-8 gap-6 items-start rounded-2xl border border-[#FCFCFC] bg-[#F8E6F8]/50"
         >
+          {/* Card Header containing the feature title */}
           <CardHeader className="p-0">
             <CardTitle className="text-[#520052] text-[32px] font-semibold leading-[40px] pr-28">
               {feature.title}
             </CardTitle>
           </CardHeader>
+          {/* Card Content containing the feature description */}
           <CardContent className="p-0">
             <CardDescription className="text-[#7D7D7D] text-2xl font-normal leading-[32px]">
               {feature.description}
