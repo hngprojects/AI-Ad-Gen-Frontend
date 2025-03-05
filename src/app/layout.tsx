@@ -9,6 +9,7 @@ import { SonnerToaster } from '@/components/sonner-toaster';
 import Header from '@/components/Header'; 
 
 import './globals.css';
+import Footer from '@/components/footer';
 
 const manrope = Manrope({
   variable: '--font-manrope',
