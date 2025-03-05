@@ -1,0 +1,51 @@
+name: Frontend CI Test
+
+on:
+  push:
+    branches:
+      - dev
+      - main
+  pull_request:
+    branches:
+      - dev
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: latest
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install TypeScript (if not installed)
+        run: pnpm add -D typescript
+
+      - name: TypeScript Type Check
+        run: pnpm tsc --noEmit
+
+      - name: Lint Code
+        run: pnpm run lint
+
+      - name: Run Tests
+        run: pnpm test
+
+      - name: Build Next.js Application
+        run: pnpm run build
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nextjs-build
+          path: .next
