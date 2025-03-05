@@ -1,4 +1,14 @@
 "use client";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
+import { Tick } from "./icons/icon";
+import { Button } from "./ui/button";
 
 interface Tier {
   name: string;
@@ -52,5 +62,18 @@ const tiers: Tier[] = [
 ];
 
 export default function PricingCard() {
-  return <>hi</>;
+  return (
+    <div className="mx-auto max-w-6xl w-full">
+      <div className="mx-auto max-w-md mt-10 grid grid-cols-1 gap-6 lg:mx-0 lg:max-w-none lg:grid-cols-3">
+        {tiers.map((tier) => (
+          <Card key={tier.id}>
+            <CardHeader>
+              <CardTitle>{tier.name}</CardTitle>
+              <CardDescription>{tier.description}</CardDescription>
+            </CardHeader>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
 }
