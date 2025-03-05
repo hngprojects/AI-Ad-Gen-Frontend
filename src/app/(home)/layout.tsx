@@ -8,7 +8,7 @@ import { SonnerToaster } from "@/components/sonner-toaster";
 
 import Header from "@/components/Header";
 
-import "./globals.css";
+import "../globals.css";
 
 const manrope = Manrope({
   variable: "--font-manrope",
