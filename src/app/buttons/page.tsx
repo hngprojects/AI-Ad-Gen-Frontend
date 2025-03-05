@@ -1,10 +1,4 @@
-import {
-  Arrowright,
-  Headphone,
-  Layout,
-  Lens,
-  Mail,
-} from "@/components/icons/icon";
+import { Arrowright, Layout, Lens, Mail } from "@/components/icons/icon";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -112,8 +106,15 @@ export default function page() {
             </h2>
             <div className="space-y-3 space-x-2">
               <form className="flex w-full max-w-sm items-center space-x-2">
-                <Input type="email" className="bg-white rounded-xs outline-none border-none text-black focus:border-ring" placeholder="Enter your email" />
-                <Button type="submit" className="bg-[#CF54CF] text-white hover:bg-accent hover:text-accent-foreground">
+                <Input
+                  type="email"
+                  className="bg-white rounded-xs outline-none border-none text-black focus:border-ring"
+                  placeholder="Enter your email"
+                />
+                <Button
+                  type="submit"
+                  className="bg-[#CF54CF] text-white hover:bg-accent hover:text-accent-foreground"
+                >
                   Subscribe Now
                 </Button>
               </form>

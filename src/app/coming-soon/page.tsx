@@ -27,7 +27,7 @@ const ComingSoon = () => {
             <StarFall /> Coming Soon
           </Button>
           <hgroup className="max-w-[756px] pb-8">
-            <h1 className="font-[800] text-4xl md:text-[64px] text-center text-[#290029] heading-[76px] pb-6">
+            <h1 className="font-medium text-4xl md:text-[64px] text-center text-[#290029] heading-[76px] pb-6">
               Generate Stunning Ad campaign with AI
             </h1>
             <p className="text-[#5F5F5F] text-[16px] md:text-[20px] text-center heading-[28px]">
@@ -38,7 +38,7 @@ const ComingSoon = () => {
           </hgroup>
           <form
             action=""
-            className="flex gap-2 max-w-[772px] w-full pt-[32px] pb-[64px]"
+            className="flex flex-col sm:flex-row gap-2 max-w-[772px] w-full pt-[32px] pb-[64px]"
           >
             <Input className="w-full h-14 p-4" placeholder="Enter your email" />
             <Button className="bg-[#B800B8] text-white px-6 py-2.5 rounded-[6px] h-14">
