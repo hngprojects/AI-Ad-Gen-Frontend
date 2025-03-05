@@ -1,18 +1,21 @@
-import clsx from 'clsx';
-import type { Metadata } from 'next';
+import clsx from "clsx";
+import type { Metadata,Nunito, ADLaM_Display } from "next";
+import { Manrope } from "next/font/google";
 
-import { Manrope, Nunito, ADLaM_Display } from 'next/font/google';
 
-import { TopProgressBarProvider } from '@/lib/nprogress/top-progress-bar-provider';
-import QueryProvider from '@/lib/react-query/query-provider';
 
-import { SonnerToaster } from '@/components/sonner-toaster';
-import './globals.css';
 
+import { TopProgressBarProvider } from "@/lib/nprogress/top-progress-bar-provider";
+import QueryProvider from "@/lib/react-query/query-provider";
+import { SonnerToaster } from "@/components/sonner-toast"
+
+import Header from "@/components/Header";
+
+import "./globals.css";
 
 const manrope = Manrope({
-  variable: '--font-manrope',
-  subsets: ['latin'],
+  variable: "--font-manrope",
+  subsets: ["latin"],
 });
 
 const nunito = Nunito({
@@ -29,8 +32,8 @@ const adlam_display = ADLaM_Display({
 });
 
 export const metadata: Metadata = {
-  title: 'AI Adgen',
-  description: 'AI Adgen',
+  title: "AI Adgen",
+  description: "AI Adgen",
 };
 
 export default function RootLayout({
@@ -39,12 +42,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={clsx(manrope.variable, nunito.variable, adlam_display.variable)}>
-      <body className="font-nunito">
-      <SonnerToaster />
-      <QueryProvider>
-        <TopProgressBarProvider>{children}</TopProgressBarProvider>
-      </QueryProvider>
+
+
+    <html lang="en" className={clsx(manrope.variable, nunito.variable, adlam_display.variabl)}>
+      <body className="dark font-manrope">
+        <QueryProvider>
+          <TopProgressBarProvider>
+            <div className="flex flex-col min-h-screen">
+              <Header />
+              <main className="flex-grow">{children}</main>
+              <SonnerToaster />
+            </div>
+          </TopProgressBarProvider>
+        </QueryProvider>
+
       </body>
     </html>
   );
