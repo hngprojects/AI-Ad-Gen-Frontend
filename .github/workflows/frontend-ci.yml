@@ -3,11 +3,11 @@ name: Frontend CI Test
 on:
   push:
     branches:
-      - dev
+      - setup
       - main
   pull_request:
     branches:
-      - dev
+      - setup
       - main
 
 jobs:
