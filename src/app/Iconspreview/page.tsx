@@ -33,9 +33,9 @@ import {
 const page = () => {
   return (
     <div>
-      <h1 style={{fontSize: '24px', textAlign: 'center', margin: '50px 0'}}>
-      This is the preview page for all the icons inside
-      '@/components/icons/icon.tsx'
+      <h1 style={{ fontSize: "24px", textAlign: "center", margin: "50px 0" }}>
+        This is the preview page for all the icons inside
+        &apos;@/components/icons/icon.tsx&apos;
       </h1>
       <div
         style={{
