@@ -35,7 +35,8 @@ import { useForm } from "react-hook-form";
 import { ImageAdFormData } from "../types";
 import BackButton from "./back-button";
 import { useSubmitCampaign } from "../api/use-submit-campaign";
-import { Link, X } from "lucide-react";
+import { X } from "lucide-react";
+import Link from "next/link";
 
 const DesktopMultiSelect = dynamic(
   () => import("@/components/ui/multi-select"),
@@ -62,20 +63,22 @@ const Popup = (props: { show: boolean; onClick: MouseEventHandler<HTMLButtonElem
   return (
     props.show ?
     <div className="bg-[#2e33388d] fixed top-0 left-0 right-0 bottom-0 z-50 flex items-center justify-center px-4 h-[100vh]">
-      <div className="bg-white p-5 rounded-[20px] w-full max-w-[740px] flex flex-col gap-[15px] sm:gap-[30px]">
+      <div className="bg-white p-10 rounded-[20px] w-full max-w-[740px] flex flex-col gap-[15px] sm:gap-[30px]">
         <button className="self-end cursor-pointer" onClick={props.onClick}><X /></button>
-        <h2 className="font-[600] text-[24px] leading-[40px]">Daily Generation Limit Reached</h2>
-        <p className="font-[400] opacity-56 text-[17.5px] leADING-[140%]">You’ve used all 5 of your daily ad generations.</p>
-        <div className="flex flex-col gap-[20px] p-[20px] sm:p-[40px] bg-[#F4F8FC] rounded-[10px]">
-          <h3 className="text-[25px] font-[600] leading-[35px]">You have options</h3>
-          <ol className="font-[400] opacity-56 text-[17.5px] leADING-[140%] flex flex-col gap-[20px]">
+        <h2 className="font-[600] text-[24px] leading-[32px]">Daily Generation Limit Reached</h2>
+        <p className="font-[400] opacity-56 text-[17.54px] leading-[140%]">You&apos;ve used all 5 of your daily ad generations.</p>
+        <div className="flex flex-col gap-[20px] py-[32px] px-[40px] bg-[#F4F8FC] rounded-[8px] w-full h-[160px]">
+          <div  className="h-[96px] max-w-[482px] gap-[20px] flex flex-col justify-between">
+          <h3 className="relative justify-start text-[18px] font-[600] leading-7">You have options</h3>
+          <ol className="font-[400] opacity-56 text-[14px] leading-[24px]">
             <li>1. Sign up for an account to get unlimited access</li>
             <li>2. Wait for 8 hours for more free generations.</li>
           </ol>
+          </div>
         </div>
-        <p className="text-[22.5px] opacity-56">Don’t lose your current progress! Sign up to continue your work</p>
+        <p className="text-[16px] opacity-56">Don&apos;t lose your current progress! Sign up to continue your work.</p>
         <div className="flex justify-between">
-          <Button className="text-[#333] border-[#B800B8] py-4" variant={'outline'}>Maybe Later</Button>
+          <Button className="text-[#b800b8] border-[#B800B8] py-4" variant={'outline'}>Maybe Later</Button>
           <Link href="/signup">
             <Button className="bg-[#B800B8] py-4">Sign Up Now</Button>
           </Link>
