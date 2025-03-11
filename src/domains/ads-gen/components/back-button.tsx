@@ -18,14 +18,7 @@ const BackButton: React.FC<BackButtonProps> = ({
   const router = useRouter();
 
   const handleBack = () => {
-    try {
-      // Set a flag in sessionStorage to indicate we're navigating back
-      sessionStorage.setItem("navigatingBack", "true");
-      router.back();
-    } catch {
-      // If back navigation fails, go to fallback URL
-      router.push(fallbackUrl);
-    }
+    router.push(fallbackUrl);
   };
 
   return (

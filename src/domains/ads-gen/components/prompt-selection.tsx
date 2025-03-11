@@ -148,7 +148,7 @@ const PromptSelection: React.FC<PromptSelectionProps> = ({
 
   return (
     <div className="flex flex-col gap-10">
-      <BackButton />
+      <BackButton fallbackUrl="/"/>
       <CardHeader className="text-center px-0 mt-[15px]">
         <CardTitle className="text-[28px] leading-[36px] text-[#121316] font-semibold">
           Generate Your Image Ad for Free

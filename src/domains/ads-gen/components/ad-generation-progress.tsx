@@ -36,7 +36,7 @@ const AdGenerationProgress: React.FC = () => {
 
   return (
     <div className="max-w-[1280px] w-full py-2">
-      <BackButton />
+      <BackButton fallbackUrl="/generate-ad" />
       <div className="w-full flex max-lg:flex-col gap-10 justify-between">
         <div className="max-w-[540px] w-full ">
           <h2 className="text-[32px] text-[#121316] leading-10 font-semibold">
