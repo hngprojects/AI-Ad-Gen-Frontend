@@ -1,6 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-import { getRequest } from "@/lib/api";
+
 import { mockImages } from "../utils/step-one-form-options";
+import { getRequest } from "@/lib/axios-fetch";
+
+
 
 export const useCampaignImage = (imageId: string | null) => {
   return useQuery({

@@ -11,6 +11,8 @@ const StandalonePage = () => {
   const { imageId } = useParams();
   const { data: imageData, isLoading } = useCampaignImage(imageId as string);
 
+
+  console.log("imageData", imageData);
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
