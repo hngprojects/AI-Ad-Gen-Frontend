@@ -1,0 +1,74 @@
+name: 'Send Slack Notification'
+description: 'Send deployment notifications to Slack'
+
+inputs:
+  status:
+    description: 'Status of the deployment (started, success, failure)'
+    required: true
+  environment:
+    description: 'Deployment environment (PRODUCTION, STAGING)'
+    required: true
+  branch_name:
+    description: 'Branch name'
+    required: true
+  webhook_url:
+    description: 'Slack webhook URL'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Send Slack Notification
+      uses: slackapi/slack-github-action@v1.23.0
+      with:
+        payload: |
+          {
+            "text": "${{ inputs.status == 'started' && '🚀 *DEPLOYMENT STARTED*' || (inputs.status == 'success' && '✅ *DEPLOYMENT SUCCESSFUL*' || '❌ *DEPLOYMENT FAILED*') }}",
+            "blocks": [
+              {
+                "type": "header",
+                "text": {
+                  "type": "plain_text",
+                  "text": "${{ inputs.status == 'started' && '🚀 Frontend Deployment Started' || (inputs.status == 'success' && '✅ Frontend Deployment Successful' || '❌ Frontend Deployment Failed') }}"
+                }
+              },
+              {
+                "type": "section",
+                "fields": [
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Environment:*\n*${{ inputs.environment }}*"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Triggered by:*\n${{ github.actor }}"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Commit:*\n<${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Branch:*\n${{ inputs.branch_name }}"
+                  }
+                ]
+              },
+              {
+                "type": "actions",
+                "elements": [
+                  {
+                    "type": "button",
+                    "text": {
+                      "type": "plain_text",
+                      "text": "View Workflow"
+                    },
+                    "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                  }
+                ]
+              }
+            ]
+          }
+      env:
+        SLACK_WEBHOOK_URL: ${{ inputs.webhook_url }}
+        SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+        GITHUB_TOKEN: ${{ github.token }}

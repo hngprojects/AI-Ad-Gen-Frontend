@@ -21,17 +21,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20.x"
-
-      - name: Debug Branch Information
-        run: |
-          echo "Current branch: ${{ github.ref }}"
-          echo "Is main? ${{ github.ref == 'refs/heads/main' }}"
-          echo "Is dev? ${{ github.ref == 'refs/heads/dev' }}"
           
       - name: Setup pnpm
         uses: pnpm/action-setup@v3
         with:
           version: latest
+
           
       - name: Create Environment-Specific .env File
         run: |
@@ -42,11 +37,6 @@ jobs:
             echo "NEXT_PUBLIC_API_URL=${{ vars.DEV_API_URL }}" >> .env
             echo "NEXT_PUBLIC_ENVIRONMENT=test" >> .env
           fi
-          
-      - name: Debug Environment File
-        run: |
-          echo "Contents of .env file:"
-          cat .env
 
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
@@ -68,16 +58,11 @@ jobs:
           if-no-files-found: error
           include-hidden-files: true
           compression-level: 6
-          
-      - name: Debug Available Files
-        run: |
-          pwd
-          ls -la
-          find . -name ".next" -type d || echo ".next directory not found"
-          
-  deploy:
+
+  deploy-production:
     runs-on: aiadgen
     needs: [test-and-build]
+    if: github.ref == 'refs/heads/main'
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -85,50 +70,172 @@ jobs:
       - name: Download Build Artifacts
         uses: actions/download-artifact@v4
         with:
-          name: next-build-${{ github.ref == 'refs/heads/main' && 'prod' || 'dev' }}
+          name: next-build-prod
           path: .
-          
-      - name: Set Deployment Variables from GitHub Actions
+
+      - name: Set Environment Variables
         run: |
-          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
-            echo "DEPLOY_PORT=${{ vars.PROD_DEPLOY_PORT }}" >> $GITHUB_ENV
-            echo "DEPLOY_NAME=${{ vars.PROD_DEPLOY_NAME }}" >> $GITHUB_ENV
-            echo "DEPLOY_DIR=${{ vars.PROD_DEPLOY_DIR }}" >> $GITHUB_ENV
-          elif [ "${{ github.ref }}" == "refs/heads/dev" ]; then
-            echo "DEPLOY_PORT=${{ vars.STAGING_DEPLOY_PORT }}" >> $GITHUB_ENV
-            echo "DEPLOY_NAME=${{ vars.STAGING_DEPLOY_NAME }}" >> $GITHUB_ENV
-            echo "DEPLOY_DIR=${{ vars.STAGING_DEPLOY_DIR }}" >> $GITHUB_ENV
-          fi
-    
+          echo "ENV_NAME=production" >> $GITHUB_ENV
+          echo "DEPLOY_PORT=${{ vars.PROD_DEPLOY_PORT }}" >> $GITHUB_ENV
+          echo "DEPLOY_NAME=${{ vars.PROD_DEPLOY_NAME }}" >> $GITHUB_ENV
+          echo "DEPLOY_DIR=${{ vars.PROD_DEPLOY_DIR }}" >> $GITHUB_ENV
+          echo "SERVER_USER=${{ secrets.PROD_SERVER_USER }}" >> $GITHUB_ENV
+          echo "SERVER_IP=${{ secrets.PROD_SERVER_IP }}" >> $GITHUB_ENV
+          echo "SERVER_PASSWORD=${{ secrets.PROD_SERVER_PASSWORD }}" >> $GITHUB_ENV
+          echo "BRANCH_NAME=main" >> $GITHUB_ENV
+      
+      - name: Send Deployment Start Notification
+        uses: ./.github/actions/slack-notification
+        with:
+          status: 'started'
+          environment: 'PRODUCTION'
+          branch_name: 'main'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
           
       - name: Create Deployment Directory if Not Exists
         run: |
-          sshpass -p "${{ secrets.SERVER_PASSWORD }}" ssh -o StrictHostKeyChecking=no \
-          "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}" << EOF
-          if [ ! -d "/home/${{ secrets.SERVER_USER }}/${{ env.DEPLOY_DIR }}" ]; then
-            echo "Creating directory /home/${{ secrets.SERVER_USER }}/${{ env.DEPLOY_DIR }}"
-            mkdir -p /home/${{ secrets.SERVER_USER }}/${{ env.DEPLOY_DIR }}
+          sshpass -p "${{ env.SERVER_PASSWORD }}" ssh -o StrictHostKeyChecking=no \
+          "${{ env.SERVER_USER }}@${{ env.SERVER_IP }}" << EOF
+          if [ ! -d "/home/${{ env.SERVER_USER }}/${{ env.DEPLOY_DIR }}" ]; then
+            echo "Creating directory /home/${{ env.SERVER_USER }}/${{ env.DEPLOY_DIR }}"
+            mkdir -p /home/${{ env.SERVER_USER }}/${{ env.DEPLOY_DIR }}
           else
-            echo "Directory /home/${{ secrets.SERVER_USER }}/${{ env.DEPLOY_DIR }} already exists"
+            echo "Directory /home/${{ env.SERVER_USER }}/${{ env.DEPLOY_DIR }} already exists"
           fi
           EOF
           
       - name: Deploy to Server
+        id: deploy
         run: |
-          echo "Deploying .next build to server..."
-          sshpass -p "${{ secrets.SERVER_PASSWORD }}" scp -o StrictHostKeyChecking=no -r .next public/ package.json pnpm-lock.yaml .env \
-          "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/home/${{ secrets.SERVER_USER }}/${{ env.DEPLOY_DIR }}"
-          
+          echo "Deploying .next build to PRODUCTION server..."
+          sshpass -p "${{ env.SERVER_PASSWORD }}" rsync -az --delete --exclude='.next/cache' \
+          .next public package.json pnpm-lock.yaml .env \
+          "${{ env.SERVER_USER }}@${{ env.SERVER_IP }}:/home/${{ env.SERVER_USER }}/${{ env.DEPLOY_DIR }}"
+
       - name: Start Application on Server
+        id: start
         run: |
-          sshpass -p "${{ secrets.SERVER_PASSWORD }}" ssh -o StrictHostKeyChecking=no \
-          "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}" << 'EOF'
+          sshpass -p "${{ env.SERVER_PASSWORD }}" ssh -o StrictHostKeyChecking=no \
+          "${{ env.SERVER_USER }}@${{ env.SERVER_IP }}" << 'EOF'
           set -e # Stop script on error
           export DEPLOY_NAME="${{ env.DEPLOY_NAME }}"
           export DEPLOY_PORT="${{ env.DEPLOY_PORT }}"
           export DEPLOY_DIR="${{ env.DEPLOY_DIR }}"
-          cd /home/${{ secrets.SERVER_USER }}/$DEPLOY_DIR
+          cd /home/${{ env.SERVER_USER }}/$DEPLOY_DIR
           pnpm install --frozen-lockfile
-          pm2 delete $DEPLOY_NAME || true
+          pm2 describe $DEPLOY_NAME > /dev/null 2>&1 && pm2 delete $DEPLOY_NAME || echo "No existing process to delete"
           PORT=$DEPLOY_PORT pm2 start pnpm --name $DEPLOY_NAME -- start
           EOF
+
+      - name: Prepare Status Details
+        id: status
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "STATUS=success" >> $GITHUB_OUTPUT
+            echo "INCLUDE_DETAILS=true" >> $GITHUB_OUTPUT
+          else
+            echo "STATUS=failed" >> $GITHUB_OUTPUT
+            echo "INCLUDE_DETAILS=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Send Deployment Status Notification
+        if: always()
+        uses: ./.github/actions/slack-notification
+        with:
+          status: ${{ steps.status.outputs.STATUS }}
+          environment: 'PRODUCTION'
+          branch_name: 'main'
+          include_details: ${{ steps.status.outputs.INCLUDE_DETAILS }}
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  deploy-staging:
+    runs-on: aiadgen
+    needs: [test-and-build]
+    if: github.ref == 'refs/heads/dev'
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: next-build-dev
+          path: .
+
+      - name: Set Environment Variables
+        run: |
+          echo "ENV_NAME=staging" >> $GITHUB_ENV
+          echo "DEPLOY_PORT=${{ vars.STAGING_DEPLOY_PORT }}" >> $GITHUB_ENV
+          echo "DEPLOY_NAME=${{ vars.STAGING_DEPLOY_NAME }}" >> $GITHUB_ENV
+          echo "DEPLOY_DIR=${{ vars.STAGING_DEPLOY_DIR }}" >> $GITHUB_ENV
+          echo "SERVER_USER=${{ secrets.STAGING_SERVER_USER }}" >> $GITHUB_ENV
+          echo "SERVER_IP=${{ secrets.STAGING_SERVER_IP }}" >> $GITHUB_ENV
+          echo "SERVER_PASSWORD=${{ secrets.STAGING_SERVER_PASSWORD }}" >> $GITHUB_ENV
+          echo "BRANCH_NAME=dev" >> $GITHUB_ENV
+      
+      - name: Send Deployment Start Notification
+        uses: ./.github/actions/slack-notification
+        with:
+          status: 'started'
+          environment: 'STAGING'
+          branch_name: 'dev'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          
+      - name: Create Deployment Directory if Not Exists
+        run: |
+          sshpass -p "${{ env.SERVER_PASSWORD }}" ssh -o StrictHostKeyChecking=no \
+          "${{ env.SERVER_USER }}@${{ env.SERVER_IP }}" << EOF
+          if [ ! -d "/home/${{ env.SERVER_USER }}/${{ env.DEPLOY_DIR }}" ]; then
+            echo "Creating directory /home/${{ env.SERVER_USER }}/${{ env.DEPLOY_DIR }}"
+            mkdir -p /home/${{ env.SERVER_USER }}/${{ env.DEPLOY_DIR }}
+          else
+            echo "Directory /home/${{ env.SERVER_USER }}/${{ env.DEPLOY_DIR }} already exists"
+          fi
+          EOF
+          
+      - name: Deploy to Server
+        id: deploy
+        run: |
+          echo "Deploying .next build to SATAGING server..."
+          sshpass -p "${{ env.SERVER_PASSWORD }}" rsync -az --delete --exclude='.next/cache' \
+          .next public package.json pnpm-lock.yaml .env \
+          "${{ env.SERVER_USER }}@${{ env.SERVER_IP }}:/home/${{ env.SERVER_USER }}/${{ env.DEPLOY_DIR }}"
+
+          
+      - name: Start Application on Server
+        id: start
+        run: |
+          sshpass -p "${{ env.SERVER_PASSWORD }}" ssh -o StrictHostKeyChecking=no \
+          "${{ env.SERVER_USER }}@${{ env.SERVER_IP }}" << 'EOF'
+          set -e # Stop script on error
+          export DEPLOY_NAME="${{ env.DEPLOY_NAME }}"
+          export DEPLOY_PORT="${{ env.DEPLOY_PORT }}"
+          export DEPLOY_DIR="${{ env.DEPLOY_DIR }}"
+          cd /home/${{ env.SERVER_USER }}/$DEPLOY_DIR
+          pnpm install --frozen-lockfile
+          pm2 describe $DEPLOY_NAME > /dev/null 2>&1 && pm2 delete $DEPLOY_NAME || echo "No existing process to delete"
+          PORT=$DEPLOY_PORT pm2 start pnpm --name $DEPLOY_NAME -- start
+          EOF
+
+      - name: Prepare Status Details
+        id: status
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "STATUS=success" >> $GITHUB_OUTPUT
+            echo "INCLUDE_DETAILS=true" >> $GITHUB_OUTPUT
+          else
+            echo "STATUS=failed" >> $GITHUB_OUTPUT
+            echo "INCLUDE_DETAILS=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Send Deployment Status Notification
+        if: always()
+        uses: ./.github/actions/slack-notification
+        with:
+          status: ${{ steps.status.outputs.STATUS }}
+          environment: 'STAGING'
+          branch_name: 'dev'
+          include_details: ${{ steps.status.outputs.INCLUDE_DETAILS }}
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
