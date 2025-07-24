@@ -10,7 +10,7 @@ We are making use of pnpm so if you are not familiar with it or haven't heard it
 
 Install using:
 ```bash
-npm i -g pnpm
+npm install -g pnpm
 ```
 
 Run the development server:
